@@ -37,7 +37,7 @@ public class Main {
         final EasyBlock genesisEasyBlock = new EasyBlock("This is a Genesis Block.", "0");
         addEasyBlock(genesisEasyBlock);
 
-        final EasyBlock firstEasyBlock = new EasyBlock("This is the First Block.", genesisEasyBlock.getHash());
+        final EasyBlock firstEasyBlock = new EasyBlock("This is a First Block.", genesisEasyBlock.getHash());
         addEasyBlock(firstEasyBlock);
     }
 
