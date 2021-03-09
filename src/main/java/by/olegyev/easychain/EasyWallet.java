@@ -8,7 +8,7 @@ public class EasyWallet {
 
     private String privateKey;
     private String publicKey;
-    private float balance = 100f;
+    private float balance = 100.0f;
     private List<EasyBlock> easyBlockchain;
 
     public EasyWallet(final List<EasyBlock> easyBlockchain) {
