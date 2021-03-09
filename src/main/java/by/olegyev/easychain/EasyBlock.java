@@ -5,24 +5,33 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class EasyBlock {
 
     private String hash;
     private String previousHash;
-    private String transactionContent;
+    private List<EasyTransaction> transactions;
     private long timestamp;
     private int nonce;
 
-    public EasyBlock(final String transactionContent, final String previousHash) {
-        this.transactionContent = transactionContent;
+    public EasyBlock(final List<EasyTransaction> transactions, final String previousHash) {
+        this.transactions = transactions;
         this.previousHash = previousHash;
         this.timestamp = new Date().getTime();
         this.hash = calculateEasyBlockHash();
     }
 
     public String calculateEasyBlockHash() {
-        final String dataToHash = previousHash + timestamp + nonce + transactionContent;
+        final StringBuilder data = new StringBuilder();
+
+        for (EasyTransaction transaction : transactions) {
+            data.append(transaction.getSender());
+            data.append(transaction.getRecipient());
+            data.append(transaction.getValue());
+        }
+
+        final String dataToHash = previousHash + timestamp + nonce + data.toString();
         MessageDigest digest;
         byte[] bytes = null;
 
@@ -33,14 +42,14 @@ public class EasyBlock {
             System.out.println("ERROR! " + ex.getMessage());
         }
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder bytesSb = new StringBuilder();
         if (bytes != null) {
             for (byte b : bytes) {
-                sb.append(String.format("%02x", b));
+                bytesSb.append(String.format("%02x", b));
             }
         }
 
-        return sb.toString();
+        return bytesSb.toString();
     }
 
     public String mineEasyBlock(final int difficulty) {
@@ -48,13 +57,12 @@ public class EasyBlock {
         Arrays.fill(prefixArray, '0');
         final String hashPrefix = new String(prefixArray);
 
-        String a = hash.substring(0, difficulty);
-        ;
+        String target = hash.substring(0, difficulty);
 
-        while (!a.equals(hashPrefix)) {
+        while (!target.equals(hashPrefix)) {
             nonce++;
             hash = calculateEasyBlockHash();
-            a = hash.substring(0, difficulty);
+            target = hash.substring(0, difficulty);
         }
 
         return hash;
@@ -68,12 +76,17 @@ public class EasyBlock {
         return this.previousHash;
     }
 
+    public List<EasyTransaction> getTransactions() {
+        return transactions;
+    }
+
     @Override
     public String toString() {
         return "\n hash='" + hash + '\'' +
                 "\n previousHash='" + previousHash + '\'' +
-                "\n transactionContent='" + transactionContent + '\'' +
+                "\n numberOfTransactions=" + transactions.size() +
                 "\n timestamp=" + timestamp +
                 "\n nonce=" + nonce;
     }
+
 }

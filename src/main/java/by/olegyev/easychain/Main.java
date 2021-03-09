@@ -7,22 +7,30 @@ import java.util.List;
 public class Main {
 
     public static final List<EasyBlock> easyBlockchain = new ArrayList<>();
-    public static final int difficulty = 4;
+    public static final int difficulty = 3;
 
     public static void main(String[] args) {
-        prefillEasyBlockchain();
+        final EasyWallet wA = new EasyWallet(easyBlockchain);
+        final EasyWallet wB = new EasyWallet(easyBlockchain);
+        System.out.println("Wallet A balance: " + wA.getBalance());
+        System.out.println("Wallet B balance: " + wB.getBalance());
 
-        final EasyBlock secondEasyBlock = new EasyBlock("This is a Second Block.", easyBlockchain.get(easyBlockchain.size() - 1).getHash());
-        addEasyBlock(secondEasyBlock);
-
-        final EasyBlock thirdEasyBlock = new EasyBlock("This is a Third Block.", easyBlockchain.get(easyBlockchain.size() - 1).getHash());
-        addEasyBlock(thirdEasyBlock);
-
+        System.out.println("Adding two transactions...");
+        prefillEasyBlockchain(wA, wB);
         System.out.println();
-
         printEasyBlockchain();
+        System.out.println("Wallet A balance: " + wA.getBalance());
+        System.out.println("Wallet B balance: " + wB.getBalance());
 
         System.out.println();
+        System.out.println("Adding another two transactions...");
+        addAnotherBlock(wA, wB, easyBlockchain.get(0).getHash());
+        System.out.println();
+        printEasyBlockchain();
+        System.out.println("Wallet A balance: " + wA.getBalance());
+        System.out.println("Wallet B balance: " + wB.getBalance());
+
+        // easyBlockchain.get(1).getTransactions().get(1).setValue(100);
 
         System.out.println("EasyBlockchain is valid? \n" + isEasyBlockchainValid());
     }
@@ -33,17 +41,43 @@ public class Main {
         return new String(prefixArray);
     }
 
-    private static void prefillEasyBlockchain() {
-        final EasyBlock genesisEasyBlock = new EasyBlock("This is a Genesis Block.", "0");
-        addEasyBlock(genesisEasyBlock);
+    private static void prefillEasyBlockchain(final EasyWallet wA, final EasyWallet wB) {
+        final List<EasyTransaction> easyTransactions = new ArrayList<>();
 
-        final EasyBlock firstEasyBlock = new EasyBlock("This is a First Block.", genesisEasyBlock.getHash());
-        addEasyBlock(firstEasyBlock);
+        final EasyTransaction trA = wA.send(wB.getPublicKey(), 10);
+        if (trA != null) {
+            easyTransactions.add(trA);
+        }
+
+        final EasyTransaction trB = wA.send(wB.getPublicKey(), 30);
+        if (trB != null) {
+            easyTransactions.add(trB);
+        }
+
+        final EasyBlock genesisEasyBlock = new EasyBlock(easyTransactions, "0");
+        addEasyBlock(genesisEasyBlock);
+    }
+
+    private static void addAnotherBlock(final EasyWallet wA, final EasyWallet wB, final String prevHash) {
+        final List<EasyTransaction> easyTransactions = new ArrayList<>();
+
+        final EasyTransaction trA = wB.send(wA.getPublicKey(), 5);
+        if (trA != null) {
+            easyTransactions.add(trA);
+        }
+
+        final EasyTransaction trB = wB.send(wA.getPublicKey(), 15);
+        if (trB != null) {
+            easyTransactions.add(trB);
+        }
+
+        final EasyBlock genesisEasyBlock = new EasyBlock(easyTransactions, prevHash);
+        addEasyBlock(genesisEasyBlock);
     }
 
     private static void addEasyBlock(final EasyBlock blockToAdd) {
         final String minedHash = blockToAdd.mineEasyBlock(difficulty);
-        System.out.println("New Block Mined : " + minedHash);
+        System.out.println("New block mined : " + minedHash);
         easyBlockchain.add(blockToAdd);
     }
 
